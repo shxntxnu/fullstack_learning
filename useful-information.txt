@@ -1,0 +1,5 @@
+shantanua007_db_user
+8Z14v9mvQxjYg7y0
+
+
+mongodb+srv://<db_username>:8Z14v9mvQxjYg7y0@mern-devconnector.hmp9frk.mongodb.net/
