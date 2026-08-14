@@ -1,4 +1,6 @@
 {
     "mongoURI": "mongodb+srv://shantanua007_db_user:8Z14v9mvQxjYg7y0@mern-devconnector.hmp9frk.mongodb.net/",
-    "jwtSecret": "mysecrettoken"
+    "jwtSecret": "mysecrettoken",
+    "githubClientId": "Ov23liW024jVq35RqFgx",
+    "githubSecret": "c6b451f324fe876656781f7757cb40176c7263b4"
 }

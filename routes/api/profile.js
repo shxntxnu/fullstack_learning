@@ -1,4 +1,6 @@
 const express = require('express');
+const axios = require('axios');
+const config = require('config');
 const router = express.Router();
 const auth = require('../../middleware/auth')
 const { check, validationResult } = require('express-validator');
@@ -118,7 +120,7 @@ router.get('/', async (req, res) => {
         res.json(profiles);
     } catch (err) {
         console.error(err.message);
-        res.send(500).send('Server Error');
+        res.status(500).send('Server Error');
     }
 });
 
@@ -132,14 +134,14 @@ router.get('/user/:user_id', async (req, res) => {
 
         // check if
         if (!profile) {
-            res.status(400).json({ msg: 'Profile not found' });
+            return res.status(400).json({ msg: 'Profile not found' });
         }
 
         res.json(profile);
     } catch (err) {
         console.error(err.message);
         if (err.kind === 'ObjectId') {
-            res.status(400).json({ msg: 'Profile not found' });
+            return res.status(400).json({ msg: 'Profile not found' });
         }
         res.status(500).send('Server Error');
     }
@@ -228,7 +230,7 @@ router.delete('/experience/:exp_id', auth, async (req, res) => {
         const profile = await Profile.findOne({ user: req.user.id });
 
         // remove index
-        const removeIndex = profile.experience.map(item => item.id).indexOf(req.params.edu_id);
+        const removeIndex = profile.experience.map(item => item.id).indexOf(req.params.exp_id);
 
         // Splice
         profile.experience.splice(removeIndex, 1);
@@ -327,6 +329,44 @@ router.delete('/education/:edu_id', auth, async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
+    }
+});
+
+// @route   GET api/profile/github/:username
+// @desc    Get user repos from Github
+// @access  Public
+
+router.get('/github/:username', async (req, res) => {
+    try {
+        // const options = {
+        //     url: `https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc&client_id=${config.get('githubClientId')}&client_secret=${config.get('githubSecret')}`,
+        //     method: 'GET',
+        //     headers: { 'user-agent': 'node.js' }
+        // };
+
+        // await axios(options, (error, response, body) => {
+        //     if (error) console.error(error);
+
+        //     if (response.statusCode !== 200) {
+        //         res.status(404).json({ msg: 'No Github profile found' });
+        //     }
+
+        //     res.json(JSON.parse(body));
+        // });
+
+        const uri = encodeURI(
+            `https://api.github.com/users/${req.params.username}/repos?per_page=5&sort=created:asc&client_id=${config.get('githubClientId')}&client_secret=${config.get('githubSecret')}`
+        );
+        const headers = {
+            'user-agent': 'node.js'
+        };
+
+        const gitHubResponse = await axios.get(uri, { headers });
+
+        return res.json(gitHubResponse.data);
+    } catch (err) {
+        console.error(err.message);
+        return res.status(404).json({ msg: 'No Github profile found' });
     }
 });
 
