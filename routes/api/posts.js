@@ -141,7 +141,7 @@ router.put('/unlike/:id', auth, async (req, res) => {
             return res.status(400).json({ msg: 'Post not liked yet' });
         }
 
-        // Get remoce index
+        // Get remove index
         const removeIndex = post.likes.map(like => like.user.toString()).indexOf(req.user.id);
 
         post.likes.splice(removeIndex, 1);  // remove 1 like
@@ -149,6 +149,77 @@ router.put('/unlike/:id', auth, async (req, res) => {
         await post.save();
 
         res.json(post.likes);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   POST api/posts/comment/:id
+// @desc    Add a comment to a post
+// @access  Private
+// similar to adding a post
+router.post('/comment/:id', auth,
+    check('text', 'Text is required').not().isEmpty(),
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        try {
+
+            const user = await User.findById(req.user.id).select('-password');
+            const post = await Post.findById(req.params.id);
+
+            const newComment = {
+                text: req.body.text,
+                name: user.name,
+                avatar: user.avatar,
+                user: req.user.id
+            };
+
+            post.comments.unshift(newComment);
+
+            await post.save();
+            res.json(post.comments);
+
+        } catch (err) {
+            console.error(err.message);
+            res.status(500).send('Server Error');
+        }
+    });
+
+// @route   DELETE api/posts/comment/:postid/:commentid
+// @desc    Remove a comment from a post
+// @access  Private
+router.delete('/comment/:post_id/:comment_id', auth, async (req, res) => {
+    try {
+        const post = await Post.findById(req.params.post_id);
+
+        // check if comment exists
+        const comment = post.comments.find(comment => comment.id === req.params.comment_id);
+
+        // make sure comment exists
+        if (!comment) {
+            return res.status(404).json({ msg: 'Comment not found' });
+        }
+
+        // check if user is owner of the comment
+        if (comment.user.toString() !== req.user.id) {
+            return res.status(401).json({ msg: 'User not authorised' });
+        }
+
+        // Get remove index
+        const removeIndex = post.comments.map(comment => comment.user.toString()).indexOf(req.user.id);
+
+        post.comments.splice(removeIndex, 1);  // remove 1 like
+
+        await post.save();
+
+        res.json(post.comments);
+
+        await post.save();
+        res.json(post.comments);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
