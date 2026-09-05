@@ -29,15 +29,22 @@ const App = () =>{
     <Router>
       <Fragment>
         <Navbar />
-        <section className="container">
-          <Alert />
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<PrivateRoute component={Dashboard} />} />
-          </Routes>
-        </section>
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route
+            path="/*"
+            element={
+              <section className="container">
+                <Alert />
+                <Routes>
+                  <Route path="register" element={<Register />} />
+                  <Route path="login" element={<Login />} />
+                  <Route path="dashboard" element={<PrivateRoute component={Dashboard} />} />
+                </Routes>
+              </section>
+            }
+          />
+        </Routes>
       </Fragment>
     </Router>
   </Provider>
